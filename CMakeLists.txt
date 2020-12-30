@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.17)
 
 set(CMAKE_CXX_STANDARD 14)
 
-project( Image_Recgnition )
+project( Image_Recognition )
 find_package( OpenCV REQUIRED )
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 
@@ -15,3 +15,8 @@ target_link_libraries( A ${OpenCV_LIBS} )
 target_link_libraries( B ${OpenCV_LIBS} )
 target_link_libraries( C ${OpenCV_LIBS} )
 target_link_libraries( D ${OpenCV_LIBS} )
+
+target_link_libraries(A -lrt)
+target_link_libraries(B -lrt)
+target_link_libraries(C -lrt)
+target_link_libraries(D -lrt)
