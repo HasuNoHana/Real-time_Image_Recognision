@@ -29,16 +29,16 @@ void locate(cv::Mat &img, int &x, int &y, cv::Mat &src) {
     int step = 30, sub_step = 5;
     int count, max = 0;
     cv::Mat sub_img;
-    for (int row = 0; row < img.rows - window_row_n; row += step) {
-        for (int col = 0; col < img.cols - window_col_n; col += step) {
+    for (int row = 0; row < img.rows - window_row_n; row += step) {         // move sliding window
+        for (int col = 0; col < img.cols - window_col_n; col += step) {     //
             count = 0;
-            for (int k = 0; k < window_row_n; k += sub_step) {
-                for (int l = 0; l < window_col_n; l += sub_step) {
-                    if (img.at<uchar>(row + k, col + l) == 255) count++;
+            for (int k = 0; k < window_row_n; k += sub_step) {              // probe sliding window
+                for (int l = 0; l < window_col_n; l += sub_step) {          //
+                    if (img.at<uchar>(row + k, col + l) == 255) count++;    //
                 }
             }
             // std::cout << count << ' ';
-            if (count > max) {
+            if (count > max) {                          // there are more white pixels than ever before
                 x = col + window_col_n/2;
                 y = row + window_row_n/2;
                 max = count;
@@ -46,7 +46,7 @@ void locate(cv::Mat &img, int &x, int &y, cv::Mat &src) {
         }
         // std::cout << std::endl;
     }
-    cv::circle(src, cv::Point(x, y), 30, cv::Scalar(100), 1, cv::LINE_AA);
+    cv::circle(src, cv::Point(x, y), 30, cv::Scalar(100), 1, cv::LINE_AA);  // draw a circle to point at the overexposed area
 }
 
 int main(int argc, char** argv) {
@@ -68,9 +68,7 @@ int main(int argc, char** argv) {
     const char* window_name = "Controller location";
     cv::namedWindow( window_name, cv::WINDOW_AUTOSIZE ); // Create a window to display results
     cv::imshow( window_name, src );
-    // window_name = "Threshold Demo";
-    // cv::namedWindow( window_name, cv::WINDOW_AUTOSIZE ); // Create a window to display results
-    // cv::imshow( window_name, dst );
+    
     cv::waitKey();
     cv::destroyWindow(window_name);
 }
