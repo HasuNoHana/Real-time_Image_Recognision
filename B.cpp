@@ -1,6 +1,10 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include <vector>
+#include <string>
+#include <fcntl.h>  
+#include <sys/stat.h>
+#include <mqueue.h>
 
 void read_from_file(cv::Mat &src, int argc, char** argv) {
     cv::String imageName("stuff.jpg"); // by default
@@ -13,28 +17,18 @@ void read_from_file(cv::Mat &src, int argc, char** argv) {
     }
 }
 
-void threshold(cv::Mat &src, cv::Mat &dst) {
-    cv::Mat src_gray;
-    cv::cvtColor( src, src_gray, cv::COLOR_BGR2GRAY ); // Convert the image to Gray
-    src_gray.copyTo(dst);
-    int threshold_type = 0;                 // 0 = binary, 1 = binary inverted, 2 = truncated, 3 = to zero, 4 = to zero inverted
-    int threshold_value = 242;
-    int const max_binary_value = 255;
-
-    cv::threshold( src_gray, dst, threshold_value, max_binary_value, threshold_type );
-}
-
 void locate(cv::Mat &img, int &x, int &y, cv::Mat &src) {
     int window_row_n = 60, window_col_n = 60;
     int step = 30, sub_step = 5;
     int count, max = 0;
-    cv::Mat sub_img;
+    int threshold_value = 242;
+
     for (int row = 0; row < img.rows - window_row_n; row += step) {         // move sliding window
         for (int col = 0; col < img.cols - window_col_n; col += step) {     //
             count = 0;
-            for (int k = 0; k < window_row_n; k += sub_step) {              // probe sliding window
-                for (int l = 0; l < window_col_n; l += sub_step) {          //
-                    if (img.at<uchar>(row + k, col + l) == 255) count++;    //
+            for (int k = 0; k < window_row_n; k += sub_step) {                          // probe sliding window
+                for (int l = 0; l < window_col_n; l += sub_step) {                      //
+                    if (img.at<uchar>(row + k, col + l) >= threshold_value) count++;    //
                 }
             }
             // std::cout << count << ' ';
@@ -59,7 +53,7 @@ int main(int argc, char** argv) {
     }
 
     cv::Mat dst;
-    threshold(src, dst);
+    cv::cvtColor( src, dst, cv::COLOR_BGR2GRAY ); // Convert the image to Gray
     assert(dst.type() == CV_8U);
 
     int x, y;
