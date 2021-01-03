@@ -1,0 +1,6 @@
+/home/alicja/SCZR/Real-time_Image_Recognision/CMakeFiles/rebuild_cache.dir
+/home/alicja/SCZR/Real-time_Image_Recognision/CMakeFiles/A.dir
+/home/alicja/SCZR/Real-time_Image_Recognision/CMakeFiles/B.dir
+/home/alicja/SCZR/Real-time_Image_Recognision/CMakeFiles/C.dir
+/home/alicja/SCZR/Real-time_Image_Recognision/CMakeFiles/edit_cache.dir
+/home/alicja/SCZR/Real-time_Image_Recognision/CMakeFiles/D.dir

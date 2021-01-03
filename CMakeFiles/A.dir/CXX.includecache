@@ -1,0 +1,22 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/alicja/SCZR/Real-time_Image_Recognision/A.cpp
+iostream
+-
+opencv2/opencv.hpp
+-
+sys/msg.h
+-
+sys/ipc.h
+-
+sys/types.h
+-
+cstdio
+-
+
