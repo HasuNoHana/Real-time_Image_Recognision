@@ -4,5 +4,5 @@
 using namespace cv;
 
 int main() {
-    std::cout << "hello world" << std::endl;
+    std::cout << "hello world says A" << std::endl;
 }
