@@ -62,8 +62,8 @@ int main(int argc, char** argv) {
     locate(dst, x, y, src);
 
     struct mq_attr attr;
-    attr.mq_maxmsg = 300;
-    attr.mq_msgsize = 0;
+    attr.mq_maxmsg = 16;
+    attr.mq_msgsize = 16;
     attr.mq_flags = 0;
 
     mqd_t BC_queue = mq_open("/BC_queue", O_WRONLY | O_CREAT, 0664, &attr);
