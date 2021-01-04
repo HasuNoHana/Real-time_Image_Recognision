@@ -4,9 +4,21 @@
 #include <opencv2/opencv.hpp>
 #include <vector>
 #include <string>
-#include <fcntl.h>  
-#include <sys/stat.h>
-#include <mqueue.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
+#include <sys/shm.h>
+
+#define KLUCZ_KOLEJKA 12345
+#define KLUCZ_PAMIEC 12346
+
+#define ROZMIAR_KOMUNIKATU 50
+#define ROZMIAR_PAMIECI 100
+
+struct bufmsg{
+	long mtype; /* 1 - z A do B; 2 - z B do A */
+	char mtext[ROZMIAR_KOMUNIKATU];
+};
 
 void read_from_file(cv::Mat &src, int argc, char** argv) {
     cv::String imageName("stuff.jpg"); // by default
@@ -45,28 +57,74 @@ void locate(cv::Mat &img, int &x, int &y, cv::Mat &src) {
     cv::circle(src, cv::Point(x, y), 30, cv::Scalar(100), 1, cv::LINE_AA);  // draw a circle to point at the overexposed area
 }
 
+std::string format_message(int &x, int &y) {
+    std::stringstream message;
+    message << std::setw(8) << x;
+    message << std::setw(8) << y;
+    return message.str();
+}
+
 int main(int argc, char** argv) {
     
-    int msgget()
+    //otwarcie kolejki
+	int id_kolejki = msgget(KLUCZ_KOLEJKA, 0);
+	if(id_kolejki==-1){
+		std::cout<<"Blad otwarcia kolejki\n";
+		return 1;
+	}
+
+	//otwarcie pamięci współdzielonej
+	int id_pamieci = shmget(KLUCZ_PAMIEC, 0, 0);
+	if(id_pamieci==-1){
+		std::cout<<"Blad otwarcia pamieci\n";
+		return 1;
+	}
 
     cv::Mat src;
-    try {
-        read_from_file(src, argc, argv);
-    } catch (std::runtime_error e) {
-        return -1;
+    cv::Mat dst;
+    int x, y;
+
+    bufmsg buf;
+    // try {
+    //     read_from_file(src, argc, argv);
+    // } catch (std::runtime_error e) {
+    //     return -1;
+    // }
+    int i = 0;
+    while (true) {
+        buf.mtype = 2;
+        strncpy(buf.mtext, "w", ROZMIAR_KOMUNIKATU);
+        if (msgsnd(id_kolejki, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {
+            std::cerr << "Error while sending message to A" << std::endl;
+            return 1;
+        }
+        std::cerr << "message to A sent" << std::endl;
+        if (msgrcv(id_kolejki, &buf, ROZMIAR_KOMUNIKATU, 1, 0) == -1) {
+            std::cerr << "Error while receiving message from A" << std::endl;
+            return 1;
+        }
+        std::cerr << "message from A received" << std::endl;
+        // shared memory handling
+        read_from_file(src, argc, argv); //mock, to be deleted
+
+        cv::cvtColor(src, dst, cv::COLOR_BGR2GRAY); // Convert the image to Gray
+        locate(dst, x, y, src);
+
+        buf.mtype = 3;
+        strncpy(buf.mtext, format_message(x, y).c_str(), ROZMIAR_KOMUNIKATU);
+
+        if (msgsnd(id_kolejki, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {
+            std::cerr << "Error while sending message to C" << std::endl;
+            return 1;
+        }
+        i++;
+        if (i >= 6) break;
     }
 
-    cv::Mat dst;
-    cv::cvtColor( src, dst, cv::COLOR_BGR2GRAY ); // Convert the image to Gray
-    assert(dst.type() == CV_8U);
-
-    int x, y;
-    locate(dst, x, y, src);
-
-    const char* window_name = "Controller location";
-    cv::namedWindow( window_name, cv::WINDOW_AUTOSIZE ); // Create a window to display results
-    cv::imshow( window_name, src );
+    // const char* window_name = "Controller location";
+    // cv::namedWindow( window_name, cv::WINDOW_AUTOSIZE ); // Create a window to display results
+    // cv::imshow( window_name, src );
     
-    cv::waitKey();
-    cv::destroyWindow(window_name);
+    // cv::waitKey();
+    // cv::destroyWindow(window_name);
 }
