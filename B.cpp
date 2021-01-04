@@ -47,6 +47,8 @@ void locate(cv::Mat &img, int &x, int &y, cv::Mat &src) {
 
 int main(int argc, char** argv) {
     
+    int msgget()
+
     cv::Mat src;
     try {
         read_from_file(src, argc, argv);
@@ -60,35 +62,6 @@ int main(int argc, char** argv) {
 
     int x, y;
     locate(dst, x, y, src);
-
-    struct mq_attr attr;
-    attr.mq_maxmsg = 16;
-    attr.mq_msgsize = 16;
-    attr.mq_flags = 0;
-
-    mqd_t BC_queue = mq_open("/BC_queue", O_WRONLY | O_CREAT, 0664, &attr);
-    // std::cout << EACCES << std::endl;
-    // std::cout << EEXIST << std::endl;
-    // std::cout << EINVAL << std::endl;
-    // std::cout << EMFILE << std::endl;
-    // std::cout << ENAMETOOLONG << std::endl;
-    // std::cout << ENFILE << std::endl;
-    // std::cout << ENOENT << std::endl;
-    // std::cout << ENOMEM << std::endl;
-    // std::cout << ENOSPC << std::endl;
-
-    // std::cout << std::endl;
-    // std::cout << errno << std::endl;
-
-    std::stringstream message;
-    message << std::setw(8) << x;
-    message << std::setw(8) << y;
-    const char *msg_ptr = message.str().c_str();
-    
-    mq_send(BC_queue, msg_ptr, 16, 1);        // queue name, message, length, priority
-
-    // mq_unlink("/BC_queue");
-    mq_close(BC_queue);
 
     const char* window_name = "Controller location";
     cv::namedWindow( window_name, cv::WINDOW_AUTOSIZE ); // Create a window to display results
