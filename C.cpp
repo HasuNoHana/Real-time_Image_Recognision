@@ -5,6 +5,6 @@
 #include <mqueue.h>
 #include <string>
 
-int main() {
+int main(int argc, char** argvdd) {
     
 }
