@@ -120,11 +120,11 @@ int main(int argc, char** argv) {
         i++;
         if (i >= 6) break;
     }
-
-    // const char* window_name = "Controller location";
-    // cv::namedWindow( window_name, cv::WINDOW_AUTOSIZE ); // Create a window to display results
-    // cv::imshow( window_name, src );
-    
-    // cv::waitKey();
-    // cv::destroyWindow(window_name);
+//
+//     const char* window_name = "Controller location";
+//     cv::namedWindow( window_name, cv::WINDOW_AUTOSIZE ); // Create a window to display results
+//     cv::imshow( window_name, src );
+//
+//     cv::waitKey();
+//     cv::destroyWindow(window_name);
 }
