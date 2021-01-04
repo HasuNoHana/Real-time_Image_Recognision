@@ -1,10 +1,47 @@
+#include <sys/msg.h>
+#include <sys/shm.h>
+#include <sys/ipc.h>
+#include <sys/types.h>
 #include<sys/types.h>
 #include<sys/wait.h>
 #include<unistd.h>
 #include<stdlib.h>
 #include<iostream>
 
+//to co poniżej można by było przenieść do jakiegoś inego pliku .hpp (define oraz strukturę)
+#define KLUCZ_KOLEJKA 12345
+#define KLUCZ_PAMIEC 12346
+
+#define ROZMIAR_KOMUNIKATU 50
+#define ROZMIAR_PAMIECI 100
+
+
+struct bufmsg{
+    long mtype; /* 1 - z A do B; 2 - z B do A; 3 - z B do C; 4 - z C do D */
+    char mtext[ROZMIAR_KOMUNIKATU];
+};
+
 int main() {
+
+    //tworzenie kolejki i pamieci
+
+    //utworzenie kolejki
+    int id_kolejki = msgget(KLUCZ_KOLEJKA, IPC_CREAT|0666);
+    if(id_kolejki==-1){
+	std::cout<<"Blad otwarcia kolejki\n";
+	return 1;
+    }
+
+    //utworzenie pamięci współdzielonej
+    int id_pamieci = shmget(KLUCZ_PAMIEC, ROZMIAR_PAMIECI, IPC_CREAT|0666);
+    if(id_pamieci==-1){
+	std::cout<<"Blad utworzenia pamieci\n";
+	msgctl(id_kolejki, IPC_RMID, NULL);
+	return 1;
+    }
+
+    //tworzenie procesów
+
     int child_status;
     pid_t pidA = fork();
     if (pidA == 0) {
@@ -47,5 +84,13 @@ int main() {
             }
         }
     }
+
+    //usuwanie kolejki i pamięci
+
+    //usunięcie kolejki
+    msgctl(id_kolejki, IPC_RMID, NULL);
+    //usunięcie pamięci
+    shmctl(id_pamieci, IPC_RMID, NULL);
+
     return 0;
 }

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.5)
 
 set(CMAKE_CXX_STANDARD 14)
 
@@ -16,8 +16,3 @@ target_link_libraries( A ${OpenCV_LIBS} )
 target_link_libraries( B ${OpenCV_LIBS} )
 target_link_libraries( C ${OpenCV_LIBS} )
 target_link_libraries( D ${OpenCV_LIBS} )
-
-target_link_libraries(A -lrt)
-target_link_libraries(B -lrt)
-target_link_libraries(C -lrt)
-target_link_libraries(D -lrt)
