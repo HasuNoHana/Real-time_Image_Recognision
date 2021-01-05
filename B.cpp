@@ -16,7 +16,7 @@
 #define ROZMIAR_PAMIECI 100
 
 struct bufmsg{
-	long mtype; /* 1 - z A do B; 2 - z B do A */
+	long mtype; // 1: A->B, 2: B->A, 3: B->C
 	char mtext[ROZMIAR_KOMUNIKATU];
 };
 
@@ -45,22 +45,22 @@ void locate(cv::Mat &img, int &x, int &y, cv::Mat &src) {
                     if (img.at<uchar>(row + k, col + l) >= threshold_value) count++;    //
                 }
             }
-            // std::cout << count << ' ';
             if (count > max) {                          // there are more white pixels than ever before
                 x = col + window_col_n/2;
                 y = row + window_row_n/2;
                 max = count;
             }
         }
-        // std::cout << std::endl;
     }
     cv::circle(src, cv::Point(x, y), 30, cv::Scalar(100), 1, cv::LINE_AA);  // draw a circle to point at the overexposed area
 }
 
-std::string format_message(int &x, int &y) {
+std::string format_message(int &x, int &y, int &Xsize, int &Ysize) {
     std::stringstream message;
-    message << std::setw(8) << x;
-    message << std::setw(8) << y;
+    message << std::setw(4) << x;
+    message << std::setw(4) << y;
+    message << std::setw(4) << Xsize;
+    message << std::setw(4) << Ysize;
     return message.str();
 }
 
@@ -85,11 +85,7 @@ int main(int argc, char** argv) {
     int x, y;
 
     bufmsg buf;
-    // try {
-    //     read_from_file(src, argc, argv);
-    // } catch (std::runtime_error e) {
-    //     return -1;
-    // }
+
     int i = 0;
     while (true) {
         buf.mtype = 2;
@@ -107,11 +103,12 @@ int main(int argc, char** argv) {
         // shared memory handling
         read_from_file(src, argc, argv); //mock, to be deleted
 
+
         cv::cvtColor(src, dst, cv::COLOR_BGR2GRAY); // Convert the image to Gray
         locate(dst, x, y, src);
 
         buf.mtype = 3;
-        strncpy(buf.mtext, format_message(x, y).c_str(), ROZMIAR_KOMUNIKATU);
+        strncpy(buf.mtext, format_message(x, y, dst.cols, dst.rows).c_str(), ROZMIAR_KOMUNIKATU);
 
         if (msgsnd(id_kolejki, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {
             std::cerr << "Error while sending message to C" << std::endl;
