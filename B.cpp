@@ -101,7 +101,12 @@ int main(int argc, char** argv) {
         }
         std::cerr << "message from A received" << std::endl;
         // shared memory handling
-        read_from_file(src, argc, argv); //mock, to be deleted
+        // read_from_file(src, argc, argv); //mock, to be deleted
+
+        if ((shm = shmat(shmid, NULL, 0)) == (char *) -1) {
+            perror("shmat");
+            exit(1);
+        }
 
 
         cv::cvtColor(src, dst, cv::COLOR_BGR2GRAY); // Convert the image to Gray
