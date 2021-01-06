@@ -31,7 +31,7 @@ void read_from_file(cv::Mat &src, int argc, char** argv) {
     }
 }
 
-void locate(cv::Mat &img, int &x, int &y, cv::Mat &src) {
+void locate(cv::Mat &img, int &x, int &y) {
     int window_row_n = 60, window_col_n = 60;
     int step = 30, sub_step = 5;
     int count, max = 0;
@@ -52,7 +52,7 @@ void locate(cv::Mat &img, int &x, int &y, cv::Mat &src) {
             }
         }
     }
-    cv::circle(src, cv::Point(x, y), 30, cv::Scalar(100), 1, cv::LINE_AA);  // draw a circle to point at the overexposed area
+    // cv::circle(src, cv::Point(x, y), 30, cv::Scalar(100), 1, cv::LINE_AA);  // draw a circle to point at the overexposed area
 }
 
 std::string format_message(int &x, int &y, int &Xsize, int &Ysize) {
@@ -66,19 +66,26 @@ std::string format_message(int &x, int &y, int &Xsize, int &Ysize) {
 
 int main(int argc, char** argv) {
     
-    //otwarcie kolejki
+    // open message queue
 	int id_kolejki = msgget(KLUCZ_KOLEJKA, 0);
 	if(id_kolejki==-1){
-		std::cout<<"Blad otwarcia kolejki\n";
-		return 1;
+		std::cerr << "Error while opening message queue" << std::endl;
+		exit(1);
 	}
 
-	//otwarcie pamięci współdzielonej
+	// open shared memory 
 	int id_pamieci = shmget(KLUCZ_PAMIEC, 0, 0);
 	if(id_pamieci==-1){
-		std::cout<<"Blad otwarcia pamieci\n";
-		return 1;
+		std::cerr << "Error while opening shared memory" << std::endl;
+		exit(1);
 	}
+
+    // attaching shared memory segment
+    void *shared_frame = (void *)(cv::Mat *)shmat(id_pamieci, NULL, 0);
+    if (shared_frame == (void *) -1) {
+        std::cerr << "Error while attaching shared memory segment" << std::endl;
+        exit(1);
+    }
 
     cv::Mat src;
     cv::Mat dst;
@@ -86,47 +93,51 @@ int main(int argc, char** argv) {
 
     bufmsg buf;
 
+    // ready to receive the first frame
+    buf.mtype = 2;
+    if (msgsnd(id_kolejki, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {
+        std::cerr << "Error while sending message to A" << std::endl;
+        exit(1);
+    }
+    std::cerr << "message to A sent" << std::endl;
+
     int i = 0;
     while (true) {
-        buf.mtype = 2;
-        strncpy(buf.mtext, "w", ROZMIAR_KOMUNIKATU);
-        if (msgsnd(id_kolejki, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {
-            std::cerr << "Error while sending message to A" << std::endl;
-            return 1;
-        }
-        std::cerr << "message to A sent" << std::endl;
         if (msgrcv(id_kolejki, &buf, ROZMIAR_KOMUNIKATU, 1, 0) == -1) {
             std::cerr << "Error while receiving message from A" << std::endl;
-            return 1;
-        }
-        std::cerr << "message from A received" << std::endl;
-        // shared memory handling
-        // read_from_file(src, argc, argv); //mock, to be deleted
-
-        if ((shm = shmat(shmid, NULL, 0)) == (char *) -1) {
-            perror("shmat");
             exit(1);
         }
+        std::cerr << "message from A received" << std::endl;
 
+        // using shared memory
+        std::cerr << "trying to use shared memory" << std::endl;
 
+        src = ((cv::Mat) *(cv::Mat *)shared_frame);
+        std::cerr << "assigned memory to Mat" << std::endl;
         cv::cvtColor(src, dst, cv::COLOR_BGR2GRAY); // Convert the image to Gray
-        locate(dst, x, y, src);
+        std::cerr << "converted image to gray" << std::endl;
+        locate(dst, x, y);
+        std::cerr << "located controller" << std::endl;
+
+        //finished using shared memory
+        buf.mtype = 2;
+        if (msgsnd(id_kolejki, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {
+            std::cerr << "Error while sending message to A" << std::endl;
+            exit(1);
+        }
+        std::cerr << "message to A sent" << std::endl;
 
         buf.mtype = 3;
         strncpy(buf.mtext, format_message(x, y, dst.cols, dst.rows).c_str(), ROZMIAR_KOMUNIKATU);
 
         if (msgsnd(id_kolejki, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {
             std::cerr << "Error while sending message to C" << std::endl;
-            return 1;
+            exit(1);
         }
         i++;
         if (i >= 6) break;
     }
-
-    // const char* window_name = "Controller location";
-    // cv::namedWindow( window_name, cv::WINDOW_AUTOSIZE ); // Create a window to display results
-    // cv::imshow( window_name, src );
-    
-    // cv::waitKey();
-    // cv::destroyWindow(window_name);
+    if (shmdt(shared_frame) == (uchar) -1) {
+        std::cerr << "Error while closing shared memory" << std::endl;
+    }
 }

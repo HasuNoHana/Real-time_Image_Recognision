@@ -75,9 +75,18 @@ int main() {
                     bool A_terminated = false, B_terminated = false, C_terminated = false, D_terminated = false;
                     do {
                         pid_t tpid = wait(&child_status);
-                        if(tpid == pidA) A_terminated = true;
-                        if(tpid == pidB) B_terminated = true;
-                        if(tpid == pidC) C_terminated = true;
+                        if(tpid == pidA) {
+                            A_terminated = true;
+                            std::cerr << "A terminated" << std::endl;
+                        }
+                        if(tpid == pidB) {
+                            B_terminated = true;
+                            std::cerr << "B terminated" << std::endl;
+                        }
+                        if(tpid == pidC) {
+                            C_terminated = true;
+                            std::cerr << "C terminated" << std::endl;
+                        }
                         if(tpid == pidD) D_terminated = true;
                     } while(!A_terminated || !B_terminated || !C_terminated || !D_terminated);
                 }
