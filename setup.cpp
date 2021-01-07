@@ -8,32 +8,21 @@
 #include<stdlib.h>
 #include<iostream>
 
-//to co poniżej można by było przenieść do jakiegoś inego pliku .hpp (define oraz strukturę)
-#define KLUCZ_KOLEJKA 12345
-#define KLUCZ_PAMIEC 12346
-
-#define ROZMIAR_KOMUNIKATU 50
-#define ROZMIAR_PAMIECI 100
-
-
-struct bufmsg{
-    long mtype; /* 1 - z A do B; 2 - z B do A; 3 - z B do C; 4 - z C do D */
-    char mtext[ROZMIAR_KOMUNIKATU];
-};
+#include "dane.hpp"
 
 int main() {
 
     //tworzenie kolejki i pamieci
 
     //utworzenie kolejki
-    int id_kolejki = msgget(KLUCZ_KOLEJKA, IPC_CREAT|0666);
+    int id_kolejki = msgget(KLUCZ_KOLEJKA, IPC_CREAT|0600);
     if(id_kolejki==-1){
 	std::cout<<"Blad otwarcia kolejki\n";
 	return 1;
     }
 
     //utworzenie pamięci współdzielonej
-    int id_pamieci = shmget(KLUCZ_PAMIEC, ROZMIAR_PAMIECI, IPC_CREAT|0666);
+    int id_pamieci = shmget(KLUCZ_PAMIEC, ROZMIAR_PAMIECI, IPC_CREAT|0600);
     if(id_pamieci==-1){
 	std::cout<<"Blad utworzenia pamieci\n";
 	msgctl(id_kolejki, IPC_RMID, NULL);

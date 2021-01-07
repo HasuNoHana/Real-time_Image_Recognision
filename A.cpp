@@ -8,22 +8,13 @@
 #include <cstring>
 
 
-#define KLUCZ_KOLEJKA 12345
-#define KLUCZ_PAMIEC 12346
-
-#define ROZMIAR_KOMUNIKATU 50
-#define ROZMIAR_PAMIECI 100
-
-struct bufmsg{
-	long mtype; /* 1 - z A do B; 2 - z B do A */
-	char mtext[ROZMIAR_KOMUNIKATU];
-};
+#include "dane.hpp"
 
 
 int main() {
 
 	cv::Mat frame;
-	cv::Mat* shared_frame;
+	uchar* shared_frame;
 	bufmsg buf;
 
 	//otwarcie kolejki
@@ -40,21 +31,17 @@ int main() {
 		return 1;
 	}
 
-	//otwarcie bufora pamięci współdzielonej
-	shared_frame = (cv::Mat*) shmat(id_pamieci, 0, 0);
-	if(shared_frame==(cv::Mat*)-1){
-		std::cout<<"Blad otwarcia bufora pamieci\n";
-		return 1;
-	}
-
 	//utworzenie deskryptora kamery
     	cv::VideoCapture camera(0);
 	if(!camera.isOpened()){
 		std::cout<<"Nie otworzono kamere - blad\n";
-		//zamkniecie bufora pamieci
-		if(shmdt(shared_frame)==-1){
-			std::cout<<"Blad zamkniecia bufora pamieci\n";
-		}
+		return 1;
+	}
+
+	//otwarcie bufora pamięci współdzielonej
+	shared_frame = (uchar*) shmat(id_pamieci, 0, 0);
+	if(shared_frame==(uchar*)-1){
+		std::cout<<"Blad otwarcia bufora pamieci\n";
 		return 1;
 	}
 
@@ -66,28 +53,21 @@ int main() {
 
 		//czy inny proces oczekuje na klatkę
 		if(msgrcv(id_kolejki, &buf, ROZMIAR_KOMUNIKATU, 2, IPC_NOWAIT)!=-1){
+			
 			//wstawienie ramki do pamięci współdzielonej
-			memcpy(shared_frame, &frame, sizeof(frame));
-	
+			memcpy(shared_frame, frame.data, ROZMIAR_PAMIECI);
+
 			//wysylanie komunikatu
 			buf.mtype = 1;
 			sprintf(buf.mtext, "1");
 			if(msgsnd(id_kolejki, &buf, ROZMIAR_KOMUNIKATU, 0)==-1){
 				std::cout<<"Nie wyslano komunikatu - blad\n";
-				//zamkniecie bufora pamieci
-				if(shmdt(shared_frame)==-1){
-					std::cout<<"Blad zamkniecia bufora pamieci\n";
-				}
-				//zamkniecie kamery
-				camera.release();
-				return 1;
+				break;
 			}
 
-			//musi być jakiś warunek zakończenia procesu (chyba), to jest bardzo chwilowy, przekaże 6 klatek i koniec
-
-
+			//musi być jakiś warunek zakończenia procesu (chyba), to jest bardzo chwilowy, przekaże jedną klatke i koniec
 			++i;//do usunięcia
-			if(i==6){//do usunięcia
+			if(i==1){//do usunięcia
 				break;//do usunięcia
 			}//do usunięcia
 		}
@@ -99,6 +79,7 @@ int main() {
 	}
 	//zamkniecie kamery
 	camera.release();
+	std::cout<<"koniec procesu\n";
 
 	return 0;
 }
