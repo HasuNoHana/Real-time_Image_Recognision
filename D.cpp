@@ -19,10 +19,9 @@ void readMessage(char *fieldLength, char *fieldHeight, char mtext[]){
 
 int main(int argc, char** argv) {
     //otwarcie kolejki
-    int id_kolejki = msgget(KLUCZ_KOLEJKA, 0);
-    if(id_kolejki==-1){
-        std::cout<<"Blad otwarcia kolejki\n";
-        return 1;
+    int queue_id = msgget(KLUCZ_KOLEJKA, 0);
+    if(queue_id==-1){
+        error_message_exit("Error while opening message queue", nullptr);
     }
 
     bufmsg buf;
@@ -30,7 +29,7 @@ int main(int argc, char** argv) {
     int i = 0;
     while (true) {
 
-        if (msgrcv(id_kolejki, &buf, ROZMIAR_KOMUNIKATU, 4, 0) == -1) {
+        if (msgrcv(queue_id, &buf, ROZMIAR_KOMUNIKATU, 4, 0) == -1) {
             std::cerr << "Error while receiving message from C" << std::endl;
             return 1;
         }

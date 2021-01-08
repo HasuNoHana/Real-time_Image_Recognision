@@ -99,18 +99,17 @@ std::string format_message(char fieldLength, char fieldHeight) {
 
 int main(int argc, char** argvdd) {
 
-    //otwarcie kolejki
-    int id_kolejki = msgget(KLUCZ_KOLEJKA, 0);
-    if(id_kolejki==-1){
-        std::cout<<"Blad otwarcia kolejki\n";
-        return 1;
+    //open queue
+    int queue_id = msgget(KLUCZ_KOLEJKA, 0);
+    if(queue_id==-1){
+        error_message_exit("Error while opening message queue", nullptr);
     }
     bufmsg buf;
     int i = 0;
 
     while (true) {
 
-        if (msgrcv(id_kolejki, &buf, ROZMIAR_KOMUNIKATU, 3, 0) == -1) {
+        if (msgrcv(queue_id, &buf, ROZMIAR_KOMUNIKATU, 3, 0) == -1) {
             std::cerr << "Error while receiving message from B" << std::endl;
             return 1;
         }
@@ -134,7 +133,7 @@ int main(int argc, char** argvdd) {
         buf.mtype = 4;
         strncpy(buf.mtext, format_message(fieldLength, fieldHeight).c_str(), ROZMIAR_KOMUNIKATU);
 
-        if (msgsnd(id_kolejki, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {
+        if (msgsnd(queue_id, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {
             std::cerr << "Error while sending message to D" << std::endl;
             return 1;
         }
