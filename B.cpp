@@ -37,10 +37,10 @@ void locate(cv::Mat &img, int &x, int &y) {
 
 std::string format_message(int &x, int &y, int &Xsize, int &Ysize) {        // (to C)
     std::stringstream message;
-    message << std::setw(4) << x;
-    message << std::setw(4) << y;
-    message << std::setw(4) << Xsize;
-    message << std::setw(4) << Ysize;
+    message << x << " ";
+    message << y << " ";
+    message << Xsize << " ";
+    message << Ysize;
     return message.str();
 }
 
@@ -102,8 +102,6 @@ int main(int argc, char** argv) {
         locate(dst, x, y);                                                              // save overexposed area coordinates in x, y
         //finished using shared memory
 
-        std::cout << "x: " << x << " y: " << y << std::endl;
-
         // notify A that it can put a new frame in shmem
         buf.mtype = 2;
         strncpy(buf.mtext, "", 1);
@@ -114,7 +112,6 @@ int main(int argc, char** argv) {
         // send overexposed area coordinates to C
         buf.mtype = 3;
         strncpy(buf.mtext, format_message(x, y, dst.cols, dst.rows).c_str(), ROZMIAR_KOMUNIKATU);
-
         if (msgsnd(queue_id, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {
             error_message_exit("Error while sending message to C", shared_frame);
         }
