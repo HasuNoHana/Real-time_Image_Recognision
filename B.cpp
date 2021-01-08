@@ -16,7 +16,7 @@
 #define ROZMIAR_PAMIECI 100
 
 struct bufmsg{
-	long mtype; // 1: A->B, 2: B->A, 3: B->C
+	long mtype; // 1: A->B, 2: B->A, 3: B->C, 4: C->D
 	char mtext[ROZMIAR_KOMUNIKATU];
 };
 
