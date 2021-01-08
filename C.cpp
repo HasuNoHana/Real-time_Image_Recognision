@@ -24,6 +24,8 @@
 
 #define ROZMIAR_KOMUNIKATU 50
 #define ROZMIAR_PAMIECI 100
+#define PODZIAL_DLUGOSC 3 //constant
+#define PODZIAL_WYSOKOSC 3 //constant
 
 
 struct bufmsg{
@@ -72,6 +74,43 @@ void readComunicate(int *x, int *y, int *length, int *hight, char mtext[]){
     (*hight) = results[4];
 }
 
+char findFieldCoordinateInDimention( int coordinate, int dimension ){
+    int divide[3];
+    divide[0]=dimension/3;
+    divide[1]=dimension/3;
+    divide[2]=dimension - divide[0] - divide[1];
+    int rightBoarderA = divide[0], rightBoarderB = divide[0] + divide[1], rightBoarderC = dimension;
+    char result;
+    std::cout << " dimension: " << dimension;
+    std::cout << " coordinate: " << coordinate;
+    std::cout << " rightBoarderA: " << rightBoarderA;
+    std::cout << " rightBoarderB: " << rightBoarderB;
+    std::cout << " rightBoarderC: " << rightBoarderC;
+    if( coordinate > rightBoarderC || coordinate < 0)
+        std::cerr << "coordinate has wrong value" << std::endl;
+    else if( coordinate < rightBoarderC && coordinate > rightBoarderB )
+        result = 'C';
+    else if( coordinate < rightBoarderB && coordinate > rightBoarderA )
+        result = 'B';
+    else if( coordinate < rightBoarderA && coordinate > 0 )
+        result = 'A';
+    else
+        std::cerr << "coordinate has wrong value" << std::endl;
+    std::cout << " result: " << result << std::endl;
+    return result;
+}
+
+void findField(int x, int y, int length, int height, char *fieldLength, char *fieldHeight){
+    (*fieldLength) = findFieldCoordinateInDimention( x, length );
+    char help = findFieldCoordinateInDimention( height - y, height );
+    switch(help){
+        case 'C': (*fieldHeight)='1'; break;
+        case 'B': (*fieldHeight)='2'; break;
+        case 'A': (*fieldHeight)='3'; break;
+        defauld: std::cerr << "findFieldCoordinateInDimention returned wrong value" << std::endl;
+    }
+}
+
 int main(int argc, char** argvdd) {
 
     //otwarcie kolejki
@@ -116,16 +155,18 @@ int main(int argc, char** argvdd) {
 //            std::cout << int(buf.mtext[j]) << " ";
 //        }
 
-        int x, y, length, hight;
-        readComunicate(&x, &y, &length, &hight, buf.mtext);
+        int x, y, length, height;
+        readComunicate(&x, &y, &length, &height, buf.mtext);
 
-        std::cout << " x: " << x;
-        std::cout << " y: " << y;
-        std::cout << " length: " << length;
-        std::cout << " hight: " << hight;
+//        std::cout << " x: " << x;
+//        std::cout << " y: " << y;
+//        std::cout << " length: " << length;
+//        std::cout << " height: " << height;
 
+        char fieldLength, fieldHeight;
+        findField(212, 159, length, height, &fieldLength, &fieldHeight);
 
-
+        std::cout << " fieldLength: "<<fieldLength<<" fieldHeight: "<<fieldHeight<<std::endl;
 
 
         std::cout << std::endl << std::endl;
