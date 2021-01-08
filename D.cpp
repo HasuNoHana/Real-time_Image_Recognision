@@ -20,6 +20,25 @@ struct bufmsg{
     char mtext[ROZMIAR_KOMUNIKATU];
 };
 
+void readField(char *fieldLength, char *fieldHeight, char mtext[]){
+    int current=0;
+
+    (*fieldLength) = mtext[0];
+    (*fieldHeight) = mtext[1];
+//
+//    while(( int(mtext[current]) != 0 ) && (current < ROZMIAR_KOMUNIKATU)){
+//        std::cout << int(mtext[current]) << " ";
+//    if( mtext[current] == ' ' ){
+//    results[currentResault] = readLastNumber(mtext, current, lastSpace);
+//    lastSpace = current;
+//    currentResault++;
+//    }
+//    current++;
+//    }
+//    results[currentResault] = readLastNumber(mtext, current, lastSpace);
+
+}
+
 int main(int argc, char** argv) {
     //otwarcie kolejki
     int id_kolejki = msgget(KLUCZ_KOLEJKA, 0);
@@ -39,9 +58,15 @@ int main(int argc, char** argv) {
         }
         std::cerr << "message from C received" << std::endl;
 
-        for(int j=0; j < ROZMIAR_KOMUNIKATU; j++){
-            std::cout << int(buf.mtext[j]) << " ";
-        }
+//        for(int j=0; j < ROZMIAR_KOMUNIKATU; j++){
+//            std::cout << int(buf.mtext[j]) << " ";
+//        }
+
+        char fieldLength, fieldHeight;
+        readField(&fieldLength, &fieldHeight, buf.mtext);
+
+        std::cout << " fieldLength: " << fieldLength;
+        std::cout << " fieldHeight: " << fieldHeight << std::endl;
 
         i++;
         if (i >= 6) break;

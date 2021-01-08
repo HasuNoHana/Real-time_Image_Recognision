@@ -54,7 +54,6 @@ int readLastNumber(char mtext[], int current, int lastSpace){
 void readComunicate(int *x, int *y, int *length, int *hight, char mtext[]){
     int current=0, currentResault=0;
     int results[5] = {-1,-1,-1,-1,-1 };
-    char num[ROZMIAR_KOMUNIKATU];
     int lastSpace = 0;
 
     while(( int(mtext[current]) != 0 ) && (current < ROZMIAR_KOMUNIKATU)){
