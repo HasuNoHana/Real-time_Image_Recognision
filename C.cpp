@@ -18,20 +18,7 @@
 #include <sys/shm.h>
 
 
-//to co poniżej można by było przenieść do jakiegoś inego pliku .hpp (define oraz strukturę)
-#define KLUCZ_KOLEJKA 12345
-#define KLUCZ_PAMIEC 12346
-
-#define ROZMIAR_KOMUNIKATU 50
-#define ROZMIAR_PAMIECI 100
-#define PODZIAL_DLUGOSC 3 //constant
-#define PODZIAL_WYSOKOSC 3 //constant
-
-
-struct bufmsg{
-    long mtype; /* 1 - z A do B; 2 - z B do A; 3 - z B do C; 4 - z C do D */
-    char mtext[ROZMIAR_KOMUNIKATU];
-};
+#include "dane.hpp"
 
 int readLastNumber(char mtext[], int current, int lastSpace){
     if(current <= lastSpace)
@@ -51,13 +38,12 @@ int readLastNumber(char mtext[], int current, int lastSpace){
     return result;
 }
 
-void readComunicate(int *x, int *y, int *length, int *hight, char mtext[]){
+void readMessage(int *x, int *y, int *length, int *hight, char mtext[]){
     int current=0, currentResault=0;
-    int results[5] = {-1,-1,-1,-1,-1 };
+    int results[4] = {-1,-1,-1,-1};
     int lastSpace = 0;
 
     while(( int(mtext[current]) != 0 ) && (current < ROZMIAR_KOMUNIKATU)){
-//            std::cout << int(mtext[current]) << " ";
         if( mtext[current] == ' ' ){
             results[currentResault] = readLastNumber(mtext, current, lastSpace);
             lastSpace = current;
@@ -67,10 +53,10 @@ void readComunicate(int *x, int *y, int *length, int *hight, char mtext[]){
     }
     results[currentResault] = readLastNumber(mtext, current, lastSpace);
 
-    (*x) = results[1];
-    (*y) = results[2];
-    (*length) = results[3];
-    (*hight) = results[4];
+    (*x) = results[0];
+    (*y) = results[1];
+    (*length) = results[2];
+    (*hight) = results[3];
 }
 
 char findFieldCoordinateInDimention( int coordinate, int dimension ){
@@ -80,22 +66,16 @@ char findFieldCoordinateInDimention( int coordinate, int dimension ){
     divide[2]=dimension - divide[0] - divide[1];
     int rightBoarderA = divide[0], rightBoarderB = divide[0] + divide[1], rightBoarderC = dimension;
     char result;
-//    std::cout << " dimension: " << dimension;
-//    std::cout << " coordinate: " << coordinate;
-//    std::cout << " rightBoarderA: " << rightBoarderA;
-//    std::cout << " rightBoarderB: " << rightBoarderB;
-//    std::cout << " rightBoarderC: " << rightBoarderC;
     if( coordinate > rightBoarderC || coordinate < 0)
         std::cerr << "coordinate has wrong value" << std::endl;
-    else if( coordinate < rightBoarderC && coordinate > rightBoarderB )
+    else if( coordinate <= rightBoarderC && coordinate >= rightBoarderB )
         result = 'C';
-    else if( coordinate < rightBoarderB && coordinate > rightBoarderA )
+    else if( coordinate < rightBoarderB && coordinate >= rightBoarderA )
         result = 'B';
-    else if( coordinate < rightBoarderA && coordinate > 0 )
+    else if( coordinate < rightBoarderA && coordinate >= 0 )
         result = 'A';
     else
         std::cerr << "coordinate has wrong value" << std::endl;
-//    std::cout << " result: " << result << std::endl;
     return result;
 }
 
@@ -114,14 +94,6 @@ std::string format_message(char fieldLength, char fieldHeight) {
     std::string s = "";
     s.push_back(fieldLength);
     s.push_back(fieldHeight);
-//        std::cout << " s: "<<s<<std::endl;
-
-//    std::stringstream message;
-//    message << std::setw(4) << x;
-//    message << std::setw(4) << y;
-//    message << std::setw(4) << Xsize;
-//    message << std::setw(4) << Ysize;
-//    return message.str();
     return s;
 }
 
@@ -143,44 +115,21 @@ int main(int argc, char** argvdd) {
             return 1;
         }
 
-//        buf.mtext[0]=' ';
-//        buf.mtext[1]='3';
-//        buf.mtext[2]='3';
-//        buf.mtext[3]='0';
-//        buf.mtext[4]=' ';
-//        buf.mtext[5]='1';
-//        buf.mtext[6]='8';
-//        buf.mtext[7]='0';
-//        buf.mtext[8]=' ';
-//        buf.mtext[9]='6';
-//        buf.mtext[10]='4';
-//        buf.mtext[11]='0';
-//        buf.mtext[12]=' ';
-//        buf.mtext[13]='4';
-//        buf.mtext[14]='8';
-//        buf.mtext[15]='0';
-//        for(int j=16; j<50; j++ ){
-//            buf.mtext[j]=0;
-//        }//TODO delete this mock
-
         std::cerr << "message from B received" << std::endl;
 //        for(int j=0; j < ROZMIAR_KOMUNIKATU; j++){
 //            std::cout << int(buf.mtext[j]) << " ";
 //        }
 
         int x, y, length, height;
-        readComunicate(&x, &y, &length, &height, buf.mtext);
+        readMessage(&x, &y, &length, &height, buf.mtext);
 
-//        std::cout << " x: " << x;
-//        std::cout << " y: " << y;
-//        std::cout << " length: " << length;
-//        std::cout << " height: " << height;
+//        std::cerr << " x: " << x;
+//        std::cerr << " y: " << y;
+//        std::cerr << " length: " << length;
+//        std::cerr << " height: " << height;
 
         char fieldLength, fieldHeight;
         findField(x, y, length, height, &fieldLength, &fieldHeight);
-
-//        std::cout << " fieldLength: "<<fieldLength<<" fieldHeight: "<<fieldHeight<<std::endl;
-//        std::cout << std::endl << std::endl;
 
         buf.mtype = 4;
         strncpy(buf.mtext, format_message(fieldLength, fieldHeight).c_str(), ROZMIAR_KOMUNIKATU);
