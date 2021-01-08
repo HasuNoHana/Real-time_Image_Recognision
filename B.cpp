@@ -102,6 +102,8 @@ int main(int argc, char** argv) {
         locate(dst, x, y);                                                              // save overexposed area coordinates in x, y
         //finished using shared memory
 
+        std::cout << "x: " << x << " y: " << y << std::endl;
+
         // notify A that it can put a new frame in shmem
         buf.mtype = 2;
         strncpy(buf.mtext, "", 1);
