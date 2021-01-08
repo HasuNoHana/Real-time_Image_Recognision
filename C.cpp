@@ -81,11 +81,11 @@ char findFieldCoordinateInDimention( int coordinate, int dimension ){
     divide[2]=dimension - divide[0] - divide[1];
     int rightBoarderA = divide[0], rightBoarderB = divide[0] + divide[1], rightBoarderC = dimension;
     char result;
-    std::cout << " dimension: " << dimension;
-    std::cout << " coordinate: " << coordinate;
-    std::cout << " rightBoarderA: " << rightBoarderA;
-    std::cout << " rightBoarderB: " << rightBoarderB;
-    std::cout << " rightBoarderC: " << rightBoarderC;
+//    std::cout << " dimension: " << dimension;
+//    std::cout << " coordinate: " << coordinate;
+//    std::cout << " rightBoarderA: " << rightBoarderA;
+//    std::cout << " rightBoarderB: " << rightBoarderB;
+//    std::cout << " rightBoarderC: " << rightBoarderC;
     if( coordinate > rightBoarderC || coordinate < 0)
         std::cerr << "coordinate has wrong value" << std::endl;
     else if( coordinate < rightBoarderC && coordinate > rightBoarderB )
@@ -96,7 +96,7 @@ char findFieldCoordinateInDimention( int coordinate, int dimension ){
         result = 'A';
     else
         std::cerr << "coordinate has wrong value" << std::endl;
-    std::cout << " result: " << result << std::endl;
+//    std::cout << " result: " << result << std::endl;
     return result;
 }
 
@@ -109,6 +109,21 @@ void findField(int x, int y, int length, int height, char *fieldLength, char *fi
         case 'A': (*fieldHeight)='3'; break;
         defauld: std::cerr << "findFieldCoordinateInDimention returned wrong value" << std::endl;
     }
+}
+
+std::string format_message(char fieldLength, char fieldHeight) {
+    std::string s = "";
+    s.push_back(fieldLength);
+    s.push_back(fieldHeight);
+//        std::cout << " s: "<<s<<std::endl;
+
+//    std::stringstream message;
+//    message << std::setw(4) << x;
+//    message << std::setw(4) << y;
+//    message << std::setw(4) << Xsize;
+//    message << std::setw(4) << Ysize;
+//    return message.str();
+    return s;
 }
 
 int main(int argc, char** argvdd) {
@@ -149,7 +164,6 @@ int main(int argc, char** argvdd) {
 //            buf.mtext[j]=0;
 //        }//TODO delete this mock
 
-
         std::cerr << "message from B received" << std::endl;
 //        for(int j=0; j < ROZMIAR_KOMUNIKATU; j++){
 //            std::cout << int(buf.mtext[j]) << " ";
@@ -164,20 +178,18 @@ int main(int argc, char** argvdd) {
 //        std::cout << " height: " << height;
 
         char fieldLength, fieldHeight;
-        findField(212, 159, length, height, &fieldLength, &fieldHeight);
+        findField(x, y, length, height, &fieldLength, &fieldHeight);
 
-        std::cout << " fieldLength: "<<fieldLength<<" fieldHeight: "<<fieldHeight<<std::endl;
+//        std::cout << " fieldLength: "<<fieldLength<<" fieldHeight: "<<fieldHeight<<std::endl;
+//        std::cout << std::endl << std::endl;
 
+        buf.mtype = 4;
+        strncpy(buf.mtext, format_message(fieldLength, fieldHeight).c_str(), ROZMIAR_KOMUNIKATU);
 
-        std::cout << std::endl << std::endl;
-
-//        buf.mtype = 3;
-//        strncpy(buf.mtext, format_message(x, y, dst.cols, dst.rows).c_str(), ROZMIAR_KOMUNIKATU);
-
-//        if (msgsnd(id_kolejki, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {
-//            std::cerr << "Error while sending message to C" << std::endl;
-//            return 1;
-//        }
+        if (msgsnd(id_kolejki, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {
+            std::cerr << "Error while sending message to D" << std::endl;
+            return 1;
+        }
         i++;
         if (i >= 6) break;
     }
