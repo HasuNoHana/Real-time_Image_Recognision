@@ -27,36 +27,36 @@ int readLastNumber(char mtext[], int current, int lastSpace){
     char help[current - lastCharacter];
     int i=0;
 
-    //wrire part from original array into help array
+    //write part from original array into help array
     for( int between = lastCharacter; between < current; between++ ){
         help[i]=mtext[between];
         i++;
     }
     int result;
-    //turn content of an array into int
+    //convert content of an array into int
     sscanf(help, "%d", &result);
     return result;
 }
 
-void readMessage(int *x, int *y, int *length, int *hight, char mtext[]){
-    int current=0, currentResault=0;
+void readMessage(int *x, int *y, int *length, int *height, char mtext[]){
+    int current=0, currentResult=0;
     int results[4] = {-1,-1,-1,-1};
     int lastSpace = 0;
 
     while(( int(mtext[current]) != 0 ) && (current < ROZMIAR_KOMUNIKATU)){
         if( mtext[current] == ' ' ){
-            results[currentResault] = readLastNumber(mtext, current, lastSpace);
+            results[currentResult] = readLastNumber(mtext, current, lastSpace);
             lastSpace = current;
-            currentResault++;
+            currentResult++;
         }
         current++;
     }
-    results[currentResault] = readLastNumber(mtext, current, lastSpace);
+    results[currentResult] = readLastNumber(mtext, current, lastSpace);
 
     (*x) = results[0];
     (*y) = results[1];
     (*length) = results[2];
-    (*hight) = results[3];
+    (*height) = results[3];
 }
 
 char findFieldCoordinateInDimention( int coordinate, int dimension ){
@@ -67,7 +67,7 @@ char findFieldCoordinateInDimention( int coordinate, int dimension ){
     int rightBoarderA = divide[0], rightBoarderB = divide[0] + divide[1], rightBoarderC = dimension;
     char result;
     if( coordinate > rightBoarderC || coordinate < 0)
-        std::cerr << "coordinate has wrong value" << std::endl;
+        std::cerr << "coordinate has invalid value" << std::endl;
     else if( coordinate <= rightBoarderC && coordinate >= rightBoarderB )
         result = 'C';
     else if( coordinate < rightBoarderB && coordinate >= rightBoarderA )
@@ -75,7 +75,7 @@ char findFieldCoordinateInDimention( int coordinate, int dimension ){
     else if( coordinate < rightBoarderA && coordinate >= 0 )
         result = 'A';
     else
-        std::cerr << "coordinate has wrong value" << std::endl;
+        std::cerr << "coordinate has invalid value" << std::endl;
     return result;
 }
 
@@ -86,7 +86,7 @@ void findField(int x, int y, int length, int height, char *fieldLength, char *fi
         case 'C': (*fieldHeight)='1'; break;
         case 'B': (*fieldHeight)='2'; break;
         case 'A': (*fieldHeight)='3'; break;
-        defauld: std::cerr << "findFieldCoordinateInDimention returned wrong value" << std::endl;
+        default: std::cerr << "findFieldCoordinateInDimention returned invalid value" << std::endl;
     }
 }
 
@@ -95,6 +95,11 @@ std::string format_message(char fieldLength, char fieldHeight) {
     s.push_back(fieldLength);
     s.push_back(fieldHeight);
     return s;
+}
+
+inline void error_message_exit(const char *message, uchar *shared_frame) {
+    std::cerr << message << ": " << strerror(errno)  << std::endl;
+    exit(1);
 }
 
 int main(int argc, char** argvdd) {

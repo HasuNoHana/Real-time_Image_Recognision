@@ -17,6 +17,11 @@ void readMessage(char *fieldLength, char *fieldHeight, char mtext[]){
     (*fieldHeight) = mtext[1];
 }
 
+inline void error_message_exit(const char *message, uchar *shared_frame) {
+    std::cerr << message << ": " << strerror(errno)  << std::endl;
+    exit(1);
+}
+
 int main(int argc, char** argv) {
     //otwarcie kolejki
     int queue_id = msgget(KLUCZ_KOLEJKA, 0);
