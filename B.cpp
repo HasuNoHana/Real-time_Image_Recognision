@@ -100,6 +100,8 @@ int main(int argc, char** argv) {
         src = cv::Mat(cv::Size(640, 480), CV_8UC3, shared_frame, cv::Mat::AUTO_STEP);   // use the received image
         cv::cvtColor(src, dst, cv::COLOR_BGR2GRAY);                                     // Convert the image to Gray
         locate(dst, x, y);                                                              // save overexposed area coordinates in x, y
+//        cv::imshow("cosik",src);
+//        cv::waitKey();
         //finished using shared memory
 
         // notify A that it can put a new frame in shmem

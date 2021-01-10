@@ -51,6 +51,8 @@ int main() {
 
 		camera >> frame;
 
+//		std::cout << "frame.size: " << frame.size;
+
 		//czy inny proces oczekuje na klatkę
 		if(msgrcv(id_kolejki, &buf, ROZMIAR_KOMUNIKATU, 2, IPC_NOWAIT)!=-1){
 			
