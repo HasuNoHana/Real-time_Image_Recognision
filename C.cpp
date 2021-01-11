@@ -1,21 +1,7 @@
 #include<iostream>
 #include <opencv2/opencv.hpp>
-#include <fcntl.h>  
-#include <sys/stat.h>
-#include <mqueue.h>
-//#include <string>
-
-
-#include <iostream>
-#include <iomanip>
-#include <sstream>
-#include <opencv2/opencv.hpp>
-#include <vector>
 #include <string>
-#include <sys/types.h>
-#include <sys/ipc.h>
 #include <sys/msg.h>
-#include <sys/shm.h>
 
 
 #include "dane.hpp"

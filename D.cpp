@@ -1,13 +1,7 @@
 #include <iostream>
-#include <iomanip>
-#include <sstream>
 #include <opencv2/opencv.hpp>
-#include <vector>
 #include <string>
-#include <sys/types.h>
-#include <sys/ipc.h>
 #include <sys/msg.h>
-#include <sys/shm.h>
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
 
@@ -32,7 +26,6 @@ inline void error_message_exit(const char *message, uchar *shared_frame) {
 Field generateField() {
     Field field;
     int length = rand() % 3 + 1, height = rand() % 3 + 1; //get random numbers from 1 to 3
-    std::cout << length << height;
     switch (length) {
         case 1:
             field.fieldLength = 'A';
@@ -129,7 +122,6 @@ void welcomeMessage(){
 
 int main(int argc, char** argv) {
     srand (time(NULL));
-
     //otwarcie kolejki
     int queue_id = msgget(KLUCZ_KOLEJKA, 0);
     if(queue_id==-1){
@@ -148,9 +140,9 @@ int main(int argc, char** argv) {
     while (true) {
         currentField = generateField();
         printWhatField(currentField);
-        auto start = std::chrono::high_resolution_clock::now();
+        auto start = std::chrono::high_resolution_clock::now();//start counting time
 
-        while(recivedIsNotCurrent){
+        while(recivedIsNotCurrent){//runs until good field is pointed to
             if (msgrcv(queue_id, &buf, ROZMIAR_KOMUNIKATU, 4, 0) == -1) {
                 std::cerr << "Error while receiving message from C" << std::endl;
                 return 1;
@@ -159,25 +151,20 @@ int main(int argc, char** argv) {
 
             readMessage(&recivedField, buf.mtext);
 
-//            std::cout << "fieldLength: " << recivedField.fieldLength;
-//            std::cout << " fieldHeight: " << recivedField.fieldHeight << std::endl;
-
             if(checkIfFieldCorrect(recivedField,currentField)) {
                 recivedIsNotCurrent = false;
-                auto finish = std::chrono::high_resolution_clock::now();
+                auto finish = std::chrono::high_resolution_clock::now();//finish counting time
                 auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start);
 
                 int currentPoints = countPoints(duration.count());
                 totalPoints+=currentPoints;
                 printPositiveFeedback(currentPoints,totalPoints);
-                srand (time(NULL));
+                srand (time(NULL));//seed
             }
             else{
                 recivedIsNotCurrent = true;
             }
-
         }
-
         i++;
         if (i >= 6) break;
     }
