@@ -8,6 +8,8 @@
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include <sys/shm.h>
+#include <stdlib.h>     /* srand, rand */
+#include <time.h>       /* time */
 
 #include "dane.hpp"
 
@@ -29,8 +31,23 @@ inline void error_message_exit(const char *message, uchar *shared_frame) {
 
 Field generateField() {
     Field field;
-    field.fieldLength = 'B';
-    field.fieldHeight = '1';
+    int length = rand() % 3 + 1, height = rand() % 3 + 1; //get random numbers from 1 to 3
+    std::cout << length << height;
+    switch (length) {
+        case 1:
+            field.fieldLength = 'A';
+            break;
+        case 2:
+            field.fieldLength = 'B';
+            break;
+        case 3:
+            field.fieldLength = 'C';
+            break;
+        default:
+            std::cerr << "Wrong random number";
+            exit(1);
+    }
+    field.fieldHeight = char(height+48);
     return field;
 }
 
@@ -95,7 +112,24 @@ void printPositiveFeedback(int currentPoints, int totalPoints){
     std::cout << "Your total score is " << totalPoints << "!" << std::endl;
 }
 
+void printWhatField(Field currentField){
+    std::cout << "Point at field: " << currentField.fieldLength << currentField.fieldHeight<<std::endl;
+}
+
+void welcomeMessage(){
+    std::cout << "*** Welcome to our fabulous game! ***" << std::endl;
+    std::cout << "Rules Are Simple, light up your flashlight and point at appropriate field." << std::endl;
+    std::cout << "  _______" << std::endl;
+    std::cout << "3 |_|_|_|" << std::endl;
+    std::cout << "2 |_|_|_|" << std::endl;
+    std::cout << "1 |_|_|_|" << std::endl;
+    std::cout << "   A B C " << std::endl;
+    std::cout << "Ready, Steady Go!" << std::endl;
+}
+
 int main(int argc, char** argv) {
+    srand (time(NULL));
+
     //otwarcie kolejki
     int queue_id = msgget(KLUCZ_KOLEJKA, 0);
     if(queue_id==-1){
@@ -108,9 +142,12 @@ int main(int argc, char** argv) {
 
     int i = 0, totalPoints = 0;
 
-    while (true) {
+    //uncoment after tests
+//    welcomeMessage();
 
+    while (true) {
         currentField = generateField();
+        printWhatField(currentField);
         auto start = std::chrono::high_resolution_clock::now();
 
         while(recivedIsNotCurrent){
@@ -129,9 +166,11 @@ int main(int argc, char** argv) {
                 recivedIsNotCurrent = false;
                 auto finish = std::chrono::high_resolution_clock::now();
                 auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start);
+
                 int currentPoints = countPoints(duration.count());
                 totalPoints+=currentPoints;
                 printPositiveFeedback(currentPoints,totalPoints);
+                srand (time(NULL));
             }
             else{
                 recivedIsNotCurrent = true;
