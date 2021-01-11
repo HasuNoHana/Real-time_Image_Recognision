@@ -11,15 +11,35 @@
 
 #include "dane.hpp"
 
-void readMessage(char *fieldLength, char *fieldHeight, char mtext[]){
+struct Field{
+    char fieldLength;//A,B,C
+    char fieldHeight;//1,2,3
+};
+
+void readMessage(Field *recivedField, char mtext[]){
     int current=0;
-    (*fieldLength) = mtext[0];
-    (*fieldHeight) = mtext[1];
+    (*recivedField).fieldLength = mtext[0];
+    (*recivedField).fieldHeight = mtext[1];
 }
 
 inline void error_message_exit(const char *message, uchar *shared_frame) {
     std::cerr << message << ": " << strerror(errno)  << std::endl;
     exit(1);
+}
+
+Field generateField() {
+    Field field;
+    field.fieldLength = 'B';
+    field.fieldHeight = '1';
+    return field;
+}
+
+bool checkIfFieldCorrect(Field recivedField, Field currentField) {
+    if(recivedField.fieldLength != currentField.fieldHeight)
+        return false;
+    if(recivedField.fieldHeight != currentField.fieldHeight)
+        return false;
+    return true;
 }
 
 int main(int argc, char** argv) {
@@ -30,23 +50,74 @@ int main(int argc, char** argv) {
     }
 
     bufmsg buf;
+    bool lastFieldAcomplished = false, recivedIsNotCurrent = true;
+    Field currentField, recivedField;
 
     int i = 0;
+
     while (true) {
 
-        if (msgrcv(queue_id, &buf, ROZMIAR_KOMUNIKATU, 4, 0) == -1) {
-            std::cerr << "Error while receiving message from C" << std::endl;
-            return 1;
+        currentField = generateField();
+        auto start = std::chrono::high_resolution_clock::now();
+
+        while(recivedIsNotCurrent){
+            if (msgrcv(queue_id, &buf, ROZMIAR_KOMUNIKATU, 4, 0) == -1) {
+                std::cerr << "Error while receiving message from C" << std::endl;
+                return 1;
+            }
+            std::cerr << "message from C received" << std::endl;
+
+            char fieldLength, fieldHeight;
+            readMessage(&recivedField, buf.mtext);
+
+            std::cout << "fieldLength: " << recivedField.fieldLength;
+            std::cout << " fieldHeight: " << recivedField.fieldHeight << std::endl;
+
+            recivedIsNotCurrent = !checkIfFieldCorrect(recivedField,currentField);
+
+            std::cout << " recivedIsNotCurrent: " << int(recivedIsNotCurrent);
+            std::cerr << " recivedIsNotCurrent: " << recivedIsNotCurrent;
+
         }
-        std::cerr << "message from C received" << std::endl;
+//        std::cerr << " recivedIsNotCurrent: " << recivedIsNotCurrent;
+        auto finish = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start);
 
-        char fieldLength, fieldHeight;
-        readMessage(&fieldLength, &fieldHeight, buf.mtext);
-
-        std::cout << "fieldLength: " << fieldLength;
-        std::cout << " fieldHeight: " << fieldHeight << std::endl;
+        std::cout << " duration: " << duration.count() << std::endl;
+        std::cerr << " duration: " << duration.count() << std::endl;
 
         i++;
         if (i >= 6) break;
     }
+
+
+//    while (true) {
+//
+//        if(!lastFieldAcomplished){
+//            currentField = generateField();
+//            auto start = std::chrono::high_resolution_clock::now();
+//        }
+//
+//        if (msgrcv(queue_id, &buf, ROZMIAR_KOMUNIKATU, 4, 0) == -1) {
+//            std::cerr << "Error while receiving message from C" << std::endl;
+//            return 1;
+//        }
+//        std::cerr << "message from C received" << std::endl;
+//
+//        char fieldLength, fieldHeight;
+//        readMessage(&recivedField, buf.mtext);
+//
+//        lastFieldAcomplished = checkIfFieldCorrect(recivedField,currentField);
+//
+//        if(lastFieldAcomplished){
+//            auto finish = std::chrono::high_resolution_clock::now();
+//            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start);
+//        }
+//
+//        std::cout << "fieldLength: " << recivedField.fieldLength;
+//        std::cout << " fieldHeight: " << recivedField.fieldHeight << std::endl;
+//
+//        i++;
+//        if (i >= 6) break;
+//    }
 }
