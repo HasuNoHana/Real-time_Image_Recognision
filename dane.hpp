@@ -22,7 +22,5 @@ struct bufmsg_txt{
     // kolejka 2: B->C - 1; D->C - 2; C->D - 3
     char mtext[ROZMIAR_KOMUNIKATU];
 };
-// const int KLUCZ_KOLEJKA_1  = ftok("/home/aniela/Documents/queues/queue1",1);
-// const int KLUCZ_KOLEJKA_2  = ftok("/home/aniela/Documents/queues/queue2",1);
 
 #endif //DANE_H

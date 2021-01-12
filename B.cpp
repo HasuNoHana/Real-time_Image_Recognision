@@ -85,14 +85,12 @@ int main(int argc, char** argv) {
         error_message_exit("Error while sending message to A",  shared_frame);
     }
 
-    int i = 0;
     while (true) {
         // wait for A to send the first frame or D to terminate the whole program 
         if (msgrcv(queue_id_1, &buf_txt, ROZMIAR_KOMUNIKATU, -2, 0) == -1) {
             error_message_exit("Error while receiving message from A", shared_frame);
         }
         if (buf_txt.mtype == 2) break;
-        // std::cerr << "A -> B" << std::endl;
 
         bool controller_in_range = false;
 
@@ -102,12 +100,9 @@ int main(int argc, char** argv) {
         controller_in_range = locate(dst, x, y);                                        // save overexposed area coordinates in x, y
         //finished using shared memory
 
-        // std::cerr << "orig x: " << x;
-        // std::cerr << " y: " << y << std::endl;
-
         // notify A that it can put a new frame in shmem
         buf_txt.mtype = 3;
-        // strncpy(buf.mtext, "", 1);
+        strncpy(buf_txt.mtext, "", 1);
         if (msgsnd(queue_id_1, &buf_txt, ROZMIAR_KOMUNIKATU, 0) == -1) {
             error_message_exit("Error while sending message to A", shared_frame);
         }
@@ -120,11 +115,6 @@ int main(int argc, char** argv) {
             buf.mtext[1] = y;
             buf.mtext[2] = dst.cols;
             buf.mtext[3] = dst.rows;
-
-            // std::cerr << " x: " << buf.mtext[0];
-            // std::cerr << " y: " << buf.mtext[1];
-            // std::cerr << " length: " << buf.mtext[2];
-            // std::cerr << " height: " << buf.mtext[3] << std::endl;
 
             // strncpy(buf.mtext, format_message(x, y, dst.cols, dst.rows).c_str(), ROZMIAR_KOMUNIKATU);
             if (msgsnd(queue_id_2, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {

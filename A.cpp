@@ -46,13 +46,9 @@ int main() {
 		return 1;
 	}
 
-	int i = 0;//do usunięcia
-
-	while(1){
+	while(true){
 
 		camera >> frame;
-
-//		std::cout << "frame.size: " << frame.size;
 
 		//czy inny proces oczekuje na klatkę
 		if(msgrcv(id_kolejki, &buf, ROZMIAR_KOMUNIKATU, 3, IPC_NOWAIT)!=-1){
@@ -68,23 +64,15 @@ int main() {
 				std::cout<<"Nie wyslano komunikatu - blad\n";
 				break;
 			}
-
-			//musi być jakiś warunek zakończenia procesu (chyba), to jest bardzo chwilowy, przekaże jedną klatke i koniec
-			// ++i;//do usunięcia
-			// if(i==1000){//do usunięcia
-			// 	break;//do usunięcia
-			// }//do usunięcia
         }
 		if(msgrcv(id_kolejki, &buf, ROZMIAR_KOMUNIKATU, 4, IPC_NOWAIT)!=-1) break;
 	}
-	// std::cerr << "D -> A" << std::endl;
 	//zamkniecie bufora pamieci
 	if(shmdt(shared_frame)==-1){
 		std::cout<<"Blad zamkniecia bufora pamieci\n";
 	}
 	//zamkniecie kamery
 	camera.release();
-	std::cout<<"koniec procesu\n";
 
 	return 0;
 }

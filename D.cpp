@@ -13,10 +13,10 @@ struct Field{
     char fieldHeight;//1,2,3
 };
 
-void readMessage(Field *recivedField, char mtext[]){
+void readMessage(Field *receivedField, char mtext[]){
     int current=0;
-    (*recivedField).fieldLength = mtext[0];
-    (*recivedField).fieldHeight = mtext[1];
+    (*receivedField).fieldLength = mtext[0];
+    (*receivedField).fieldHeight = mtext[1];
 }
 
 inline void error_message_exit(const char *message, uchar *shared_frame) {
@@ -45,11 +45,11 @@ Field generateField() {
     return field;
 }
 
-bool checkIfFieldCorrect(Field recivedField, Field currentField) {
-    if(recivedField.fieldLength != currentField.fieldLength){
+bool checkIfFieldCorrect(Field receivedField, Field currentField) {
+    if(receivedField.fieldLength != currentField.fieldLength){
         return false;
     }
-    if(recivedField.fieldHeight != currentField.fieldHeight){
+    if(receivedField.fieldHeight != currentField.fieldHeight){
         return false;
     }
     return true;
@@ -114,10 +114,10 @@ void welcomeMessage(){
     std::cout << "*** Welcome to our fabulous game! ***" << std::endl;
     std::cout << "Rules Are Simple, light up your flashlight and point at appropriate field." << std::endl;
     std::cout << "  _______" << std::endl;
-    std::cout << "3 |_|_|_|" << std::endl;
-    std::cout << "2 |_|_|_|" << std::endl;
     std::cout << "1 |_|_|_|" << std::endl;
-    std::cout << "   A B C " << std::endl;
+    std::cout << "2 |_|_|_|" << std::endl;
+    std::cout << "3 |_|_|_|" << std::endl;
+    std::cout << "   C B A " << std::endl;
     std::cout << "Ready, Steady Go!" << std::endl;
 }
 
@@ -134,8 +134,8 @@ int main(int argc, char** argv) {
     }
 
     bufmsg_txt buf;
-    bool lastFieldAcomplished = false, recivedIsNotCurrent = true;
-    Field currentField, recivedField;
+    bool lastFieldAccomplished = false, receivedIsNotCurrent = true;
+    Field currentField, receivedField;
 
     int i = 0, totalPoints = 0;
 
@@ -145,20 +145,18 @@ int main(int argc, char** argv) {
     while (true) {
         currentField = generateField();
         printWhatField(currentField);
-        auto start = std::chrono::high_resolution_clock::now();//start counting time
+        auto start = std::chrono::high_resolution_clock::now();//start measuring time
 
-        while(recivedIsNotCurrent){//runs until good field is pointed to
+        while(receivedIsNotCurrent){//runs until good field is pointed to
             if (msgrcv(queue_id_2, &buf, ROZMIAR_KOMUNIKATU, 3, 0) == -1) {
                 std::cerr << "Error while receiving message from C" << std::endl;
                 return 1;
             }
-            // std::cout << buf.mtext << std::endl;
-            // std::cerr << "C -> D" << std::endl;
 
-            readMessage(&recivedField, buf.mtext);
-            if(checkIfFieldCorrect(recivedField,currentField)) {
-                recivedIsNotCurrent = false;
-                auto finish = std::chrono::high_resolution_clock::now();//finish counting time
+            readMessage(&receivedField, buf.mtext);
+            if(checkIfFieldCorrect(receivedField,currentField)) {
+                receivedIsNotCurrent = false;
+                auto finish = std::chrono::high_resolution_clock::now();//finish measuring time
                 auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start);
 
                 int currentPoints = countPoints(duration.count());
@@ -167,10 +165,10 @@ int main(int argc, char** argv) {
                 srand (time(NULL));//seed
             }
             else{
-                recivedIsNotCurrent = true;
+                receivedIsNotCurrent = true;
             }
         }
-        recivedIsNotCurrent = true;
+        receivedIsNotCurrent = true;
         i++;
         if (i >= 10) break;
     }
