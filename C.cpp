@@ -52,16 +52,16 @@ char findFieldCoordinateInDimention( int coordinate, int dimension ){
     divide[2]=dimension - divide[0] - divide[1];
     int rightBoarderA = divide[0], rightBoarderB = divide[0] + divide[1], rightBoarderC = dimension;
     char result;
-    if( coordinate > rightBoarderC || coordinate < 0)
-        std::cerr << "coordinate has invalid value" << std::endl;
-    else if( coordinate <= rightBoarderC && coordinate >= rightBoarderB )
+    // if( coordinate > rightBoarderC || coordinate < 0)
+    //     std::cout<< "coordinate has invalid value " << coordinate  << std::endl;
+    /*else */if( coordinate <= rightBoarderC && coordinate >= rightBoarderB )
         result = 'C';
     else if( coordinate < rightBoarderB && coordinate >= rightBoarderA )
         result = 'B';
     else if( coordinate < rightBoarderA && coordinate >= 0 )
         result = 'A';
-    else
-        std::cerr << "coordinate has invalid value" << coordinate << std::endl;
+    // else
+    //     std::cout << "coordinate has invalid value " << coordinate << std::endl;
     return result;
 }
 
@@ -106,6 +106,7 @@ int main(int argc, char** argvdd) {
             return 1;
         }
         if (buf.mtype == 2) break;
+        // std::cerr << "what\n";
 
         // std::cerr << buf.mtext[0] << " " << buf.mtext[1] << std::endl;
         // std::cerr << "B -> C" << std::endl;
@@ -121,22 +122,23 @@ int main(int argc, char** argvdd) {
         int height = buf.mtext[3];
         // readMessage(&x, &y, &length, &height, buf.mtext);
 
-    //    std::cerr << " x: " << x;
-    //    std::cerr << " y: " << y;
-    //    std::cerr << " length: " << length;
-    //    std::cerr << " height: " << height << std::endl;
+    //    std::cout << " x: " << x;
+    //    std::cout << " y: " << y;
+    //    std::cout << " length: " << length;
+    //    std::cout << " height: " << height << std::endl;
 
         char fieldLength, fieldHeight;
         findField(x, y, length, height, &fieldLength, &fieldHeight);
 
         buf_txt.mtype = 3;
         strncpy(buf_txt.mtext, format_message(fieldLength, fieldHeight).c_str(), ROZMIAR_KOMUNIKATU);
-        if (msgsnd(queue_id, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {
+        // std::cout << buf_txt.mtext << std::endl;
+        if (msgsnd(queue_id, &buf_txt, ROZMIAR_KOMUNIKATU, 0) == -1) {
             std::cerr << "Error while sending message to D" << std::endl;
             return 1;
         }
         // i++;
         // if (i >= 1000) break;
     }
-    // std::cerr << "D -> C" << std::endl;
+    std::cerr << "D -> C" << std::endl;
 }

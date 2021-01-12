@@ -98,12 +98,12 @@ int main(int argc, char** argv) {
 
         // using shared memory
         src = cv::Mat(cv::Size(640, 480), CV_8UC3, shared_frame, cv::Mat::AUTO_STEP);   // use the received image
-        cv::cvtColor(src, dst, cv::COLOR_BGR2GRAY);                                     // Convert the image to Gray
+        cv::cvtColor(src, dst, cv::COLOR_BGR2GRAY);                                     // convert the image to gray
         controller_in_range = locate(dst, x, y);                                        // save overexposed area coordinates in x, y
         //finished using shared memory
 
-        std::cerr << "orig x: " << buf.mtext[0];
-        std::cerr << " y: " << buf.mtext[1] << std::endl;
+        // std::cerr << "orig x: " << x;
+        // std::cerr << " y: " << y << std::endl;
 
         // notify A that it can put a new frame in shmem
         buf_txt.mtype = 3;
@@ -121,10 +121,10 @@ int main(int argc, char** argv) {
             buf.mtext[2] = dst.cols;
             buf.mtext[3] = dst.rows;
 
-            std::cerr << " x: " << buf.mtext[0];
-            std::cerr << " y: " << buf.mtext[1];
-            std::cerr << " length: " << buf.mtext[2];
-            std::cerr << " height: " << buf.mtext[3] << std::endl;
+            // std::cerr << " x: " << buf.mtext[0];
+            // std::cerr << " y: " << buf.mtext[1];
+            // std::cerr << " length: " << buf.mtext[2];
+            // std::cerr << " height: " << buf.mtext[3] << std::endl;
 
             // strncpy(buf.mtext, format_message(x, y, dst.cols, dst.rows).c_str(), ROZMIAR_KOMUNIKATU);
             if (msgsnd(queue_id_2, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {
