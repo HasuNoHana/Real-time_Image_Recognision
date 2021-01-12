@@ -55,8 +55,12 @@ inline void error_message_exit(const char *message, uchar *shared_frame) {
 int main(int argc, char** argv) {
     
     // open message queue
-	const int queue_id = msgget(KLUCZ_KOLEJKA, 0);
-	if(queue_id==-1){
+	const int queue_id_1 = msgget(KLUCZ_KOLEJKA_1, 0);
+	if(queue_id_1==-1){
+		error_message_exit("Error while opening message queue", nullptr);
+	}
+    const int queue_id_2 = msgget(KLUCZ_KOLEJKA_2, 0);
+	if(queue_id_2==-1){
 		error_message_exit("Error while opening message queue", nullptr);
 	}
 
@@ -77,55 +81,39 @@ int main(int argc, char** argv) {
     cv::Mat dst;
     int x, y;
 
-// This segment is extracted from the loop so that it is possible to only read the image size once.
-// There is no reason to to it every time.
-
     // notify A that B is ready to receive the first frame
-    buf.mtype = 2;
+    buf.mtype = 3;
     sprintf(buf.mtext, "1");
-    if (msgsnd(queue_id, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {
+    if (msgsnd(queue_id_1, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {
         error_message_exit("Error while sending message to A",  shared_frame);
     }
 
-    // wait for A to send the first frame
-    if (msgrcv(queue_id, &buf, ROZMIAR_KOMUNIKATU, 1, 0) == -1) {
-        error_message_exit("Error while receiving message from A", shared_frame);
-    }
-/////////////////////////////////////////////////////////////////////////////////////////////////
-
     int i = 0;
     while (true) {
+        // wait for A to send the first frame
+        if (msgrcv(queue_id_1, &buf, ROZMIAR_KOMUNIKATU, -2, 0) == -1) {
+            error_message_exit("Error while receiving message from A", shared_frame);
+        }
+        if (buf.mtype == 2) break;
 
         // using shared memory
         src = cv::Mat(cv::Size(640, 480), CV_8UC3, shared_frame, cv::Mat::AUTO_STEP);   // use the received image
         cv::cvtColor(src, dst, cv::COLOR_BGR2GRAY);                                     // Convert the image to Gray
         locate(dst, x, y);                                                              // save overexposed area coordinates in x, y
-    //    cv::imshow("cosik",src);
-//        cv::waitKey();
         //finished using shared memory
 
         // notify A that it can put a new frame in shmem
-        buf.mtype = 2;
+        buf.mtype = 3;
         strncpy(buf.mtext, "", 1);
-        if (msgsnd(queue_id, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {
+        if (msgsnd(queue_id_1, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {
             error_message_exit("Error while sending message to A", shared_frame);
         }
 
         // send overexposed area coordinates to C
-        buf.mtype = 3;
+        buf.mtype = 1;
         strncpy(buf.mtext, format_message(x, y, dst.cols, dst.rows).c_str(), ROZMIAR_KOMUNIKATU);
-        if (msgsnd(queue_id, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {
+        if (msgsnd(queue_id_2, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {
             error_message_exit("Error while sending message to C", shared_frame);
-        }
-
-        // i++;                // break condition, to be replaced by receiving a message from D
-        // if (i >= 1000) break;  //
-
-        if(msgrcv(queue_id, &buf, ROZMIAR_KOMUNIKATU, 6, IPC_NOWAIT)!=-1) break;
-
-        // wait for A to copy a new frame into shmem
-        if (msgrcv(queue_id, &buf, ROZMIAR_KOMUNIKATU, 1, 0) == -1) {
-            error_message_exit("Error while receiving message from A", shared_frame);
         }
     }
     // close shmem

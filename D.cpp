@@ -124,8 +124,12 @@ void welcomeMessage(){
 int main(int argc, char** argv) {
     srand (time(NULL));
     //otwarcie kolejki
-    int queue_id = msgget(KLUCZ_KOLEJKA, 0);
-    if(queue_id==-1){
+    int queue_id_1 = msgget(KLUCZ_KOLEJKA_1, 0);
+    if(queue_id_1==-1){
+        error_message_exit("Error while opening message queue", nullptr);
+    }
+    int queue_id_2 = msgget(KLUCZ_KOLEJKA_2, 0);
+    if(queue_id_2==-1){
         error_message_exit("Error while opening message queue", nullptr);
     }
 
@@ -144,7 +148,7 @@ int main(int argc, char** argv) {
         auto start = std::chrono::high_resolution_clock::now();//start counting time
 
         while(recivedIsNotCurrent){//runs until good field is pointed to
-            if (msgrcv(queue_id, &buf, ROZMIAR_KOMUNIKATU, 4, 0) == -1) {
+            if (msgrcv(queue_id_2, &buf, ROZMIAR_KOMUNIKATU, 3, 0) == -1) {
                 std::cerr << "Error while receiving message from C" << std::endl;
                 return 1;
             }
@@ -171,21 +175,21 @@ int main(int argc, char** argv) {
         if (i >= 6) break;
     }
     // notify A that the program has ended
-    buf.mtype = 5;
+    buf.mtype = 4;
     strncpy(buf.mtext, "", 1);
-    if (msgsnd(queue_id, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {
+    if (msgsnd(queue_id_1, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {
         std::cerr << "Error while sending the final message to A" << std::endl;
     }
     // notify B that the program has ended
-    buf.mtype = 6;
+    buf.mtype = 2;
     strncpy(buf.mtext, "", 1);
-    if (msgsnd(queue_id, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {
+    if (msgsnd(queue_id_1, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {
         std::cerr << "Error while sending the final message to B" << std::endl;
     }
     // notify C that the program has ended
-    buf.mtype = 7;
+    buf.mtype = 2;
     strncpy(buf.mtext, "", 1);
-    if (msgsnd(queue_id, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {
+    if (msgsnd(queue_id_2, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {
         std::cerr << "Error while sending the final message to C" << std::endl;
     }
 }

@@ -91,7 +91,7 @@ inline void error_message_exit(const char *message, uchar *shared_frame) {
 int main(int argc, char** argvdd) {
 
     //open queue
-    int queue_id = msgget(KLUCZ_KOLEJKA, 0);
+    int queue_id = msgget(KLUCZ_KOLEJKA_2, 0);
     if(queue_id==-1){
         error_message_exit("Error while opening message queue", nullptr);
     }
@@ -100,10 +100,11 @@ int main(int argc, char** argvdd) {
 
     while (true) {
 
-        if (msgrcv(queue_id, &buf, ROZMIAR_KOMUNIKATU, 3, 0) == -1) {
+        if (msgrcv(queue_id, &buf, ROZMIAR_KOMUNIKATU, -2, 0) == -1) {
             std::cerr << "Error while receiving message from B" << std::endl;
             return 1;
         }
+        if (buf.mtype == 2) break;
 
         // std::cerr << "message from B received" << std::endl;
 //        for(int j=0; j < ROZMIAR_KOMUNIKATU; j++){
@@ -121,7 +122,7 @@ int main(int argc, char** argvdd) {
         char fieldLength, fieldHeight;
         findField(x, y, length, height, &fieldLength, &fieldHeight);
 
-        buf.mtype = 4;
+        buf.mtype = 3;
         strncpy(buf.mtext, format_message(fieldLength, fieldHeight).c_str(), ROZMIAR_KOMUNIKATU);
 
         if (msgsnd(queue_id, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {
@@ -130,8 +131,6 @@ int main(int argc, char** argvdd) {
         }
         // i++;
         // if (i >= 1000) break;
-
-        if(msgrcv(queue_id, &buf, ROZMIAR_KOMUNIKATU, 7, IPC_NOWAIT)!=-1) break;
     }
 
 }

@@ -18,7 +18,7 @@ int main() {
 	bufmsg buf;
 
 	//otwarcie kolejki
-	int id_kolejki = msgget(KLUCZ_KOLEJKA, 0);
+	int id_kolejki = msgget(KLUCZ_KOLEJKA_1, 0);
 	if(id_kolejki==-1){
 		std::cout<<"Blad otwarcia kolejki\n";
 		return 1;
@@ -54,7 +54,7 @@ int main() {
 //		std::cout << "frame.size: " << frame.size;
 
 		//czy inny proces oczekuje na klatkę
-		if(msgrcv(id_kolejki, &buf, ROZMIAR_KOMUNIKATU, 2, IPC_NOWAIT)!=-1){
+		if(msgrcv(id_kolejki, &buf, ROZMIAR_KOMUNIKATU, 3, IPC_NOWAIT)!=-1){
 			
 			//wstawienie ramki do pamięci współdzielonej
 			memcpy(shared_frame, frame.data, ROZMIAR_PAMIECI);
@@ -72,9 +72,8 @@ int main() {
 			// if(i==1000){//do usunięcia
 			// 	break;//do usunięcia
 			// }//do usunięcia
-                }
-
-		if(msgrcv(id_kolejki, &buf, ROZMIAR_KOMUNIKATU, 5, IPC_NOWAIT)!=-1) break;
+        }
+		if(msgrcv(id_kolejki, &buf, ROZMIAR_KOMUNIKATU, 4, IPC_NOWAIT)!=-1) break;
 	}
 
 	//zamkniecie bufora pamieci

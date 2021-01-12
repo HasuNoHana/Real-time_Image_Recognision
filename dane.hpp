@@ -1,7 +1,9 @@
 #ifndef DANE_H
 #define DANE_H
 
-#define KLUCZ_KOLEJKA 12375
+#define KLUCZ_KOLEJKA_1 12375
+#define KLUCZ_KOLEJKA_2 12376
+
 #define KLUCZ_PAMIEC 14567
 
 #define ROZMIAR_KOMUNIKATU 50
@@ -9,7 +11,9 @@
 
 
 struct bufmsg{
-    long mtype; /* 1 - z A do B; 2 - z B do A; 3 - z B do C; 4 - z C do D */
+    long mtype;
+    // kolejka 1: A->B - 1; D->B - 2; B->A - 3; D->A - 4
+    // kolejka 2: B->C - 1; D->C - 2; C->D - 3
     char mtext[ROZMIAR_KOMUNIKATU];
 };
 

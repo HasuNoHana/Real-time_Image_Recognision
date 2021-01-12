@@ -14,9 +14,15 @@ int main() {
 
     //tworzenie kolejki i pamieci
 
-    //utworzenie kolejki
-    int id_kolejki = msgget(KLUCZ_KOLEJKA, IPC_CREAT|0600);
-    if(id_kolejki==-1){
+    //utworzenie kolejki 1
+    int id_kolejki_1 = msgget(KLUCZ_KOLEJKA_1, IPC_CREAT|0600);
+    if(id_kolejki_1==-1){
+	std::cout<<"Blad otwarcia kolejki\n";
+	return 1;
+    }
+    //utworzenie kolejki 2
+    int id_kolejki_2 = msgget(KLUCZ_KOLEJKA_2, IPC_CREAT|0600);
+    if(id_kolejki_2==-1){
 	std::cout<<"Blad otwarcia kolejki\n";
 	return 1;
     }
@@ -25,7 +31,8 @@ int main() {
     int id_pamieci = shmget(KLUCZ_PAMIEC, ROZMIAR_PAMIECI, IPC_CREAT|0600);
     if(id_pamieci==-1){
 	std::cout<<"Blad utworzenia pamieci\n";
-	msgctl(id_kolejki, IPC_RMID, NULL);
+	msgctl(id_kolejki_1, IPC_RMID, NULL);
+	msgctl(id_kolejki_2, IPC_RMID, NULL);
 	return 1;
     }
 
@@ -77,7 +84,8 @@ int main() {
     //usuwanie kolejki i pamięci
 
     //usunięcie kolejki
-    msgctl(id_kolejki, IPC_RMID, NULL);
+    msgctl(id_kolejki_1, IPC_RMID, NULL);
+    msgctl(id_kolejki_2, IPC_RMID, NULL);
     //usunięcie pamięci
     shmctl(id_pamieci, IPC_RMID, NULL);
 
