@@ -152,9 +152,9 @@ int main(int argc, char** argv) {
                 std::cerr << "Error while receiving message from C" << std::endl;
                 return 1;
             }
-            // std::cerr << "message from C received" << std::endl;
+            // std::cerr << "C -> D" << std::endl;
 
-            readMessage(&recivedField, buf.mtext);
+            // readMessage(&recivedField, buf.mtext);
 
             if(checkIfFieldCorrect(recivedField,currentField)) {
                 recivedIsNotCurrent = false;
@@ -176,19 +176,19 @@ int main(int argc, char** argv) {
     }
     // notify A that the program has ended
     buf.mtype = 4;
-    strncpy(buf.mtext, "", 1);
+    // strncpy(buf.mtext, "", 1);
     if (msgsnd(queue_id_1, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {
         std::cerr << "Error while sending the final message to A" << std::endl;
     }
     // notify B that the program has ended
     buf.mtype = 2;
-    strncpy(buf.mtext, "", 1);
+    // strncpy(buf.mtext, "", 1);
     if (msgsnd(queue_id_1, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {
         std::cerr << "Error while sending the final message to B" << std::endl;
     }
     // notify C that the program has ended
     buf.mtype = 2;
-    strncpy(buf.mtext, "", 1);
+    // strncpy(buf.mtext, "", 1);
     if (msgsnd(queue_id_2, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {
         std::cerr << "Error while sending the final message to C" << std::endl;
     }

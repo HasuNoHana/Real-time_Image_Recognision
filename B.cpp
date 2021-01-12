@@ -77,24 +77,26 @@ int main(int argc, char** argv) {
     }
 
     bufmsg buf;
+    bufmsg_txt buf_txt;
     cv::Mat src;
     cv::Mat dst;
     int x, y;
 
     // notify A that B is ready to receive the first frame
-    buf.mtype = 3;
-    sprintf(buf.mtext, "1");
-    if (msgsnd(queue_id_1, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {
+    buf_txt.mtype = 3;
+    sprintf(buf_txt.mtext, "1");
+    if (msgsnd(queue_id_1, &buf_txt, ROZMIAR_KOMUNIKATU, 0) == -1) {
         error_message_exit("Error while sending message to A",  shared_frame);
     }
 
     int i = 0;
     while (true) {
         // wait for A to send the first frame
-        if (msgrcv(queue_id_1, &buf, ROZMIAR_KOMUNIKATU, -2, 0) == -1) {
+        if (msgrcv(queue_id_1, &buf_txt, ROZMIAR_KOMUNIKATU, -2, 0) == -1) {
             error_message_exit("Error while receiving message from A", shared_frame);
         }
-        if (buf.mtype == 2) break;
+        if (buf_txt.mtype == 2) break;
+        // std::cerr << "A -> B" << std::endl;
 
         // using shared memory
         src = cv::Mat(cv::Size(640, 480), CV_8UC3, shared_frame, cv::Mat::AUTO_STEP);   // use the received image
@@ -103,15 +105,19 @@ int main(int argc, char** argv) {
         //finished using shared memory
 
         // notify A that it can put a new frame in shmem
-        buf.mtype = 3;
-        strncpy(buf.mtext, "", 1);
-        if (msgsnd(queue_id_1, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {
+        buf_txt.mtype = 3;
+        // strncpy(buf.mtext, "", 1);
+        if (msgsnd(queue_id_1, &buf_txt, ROZMIAR_KOMUNIKATU, 0) == -1) {
             error_message_exit("Error while sending message to A", shared_frame);
         }
 
         // send overexposed area coordinates to C
         buf.mtype = 1;
-        strncpy(buf.mtext, format_message(x, y, dst.cols, dst.rows).c_str(), ROZMIAR_KOMUNIKATU);
+        buf.mtext[0] = x;
+        buf.mtext[1] = y;
+        buf.mtext[2] = dst.cols;
+        buf.mtext[3] = dst.rows;
+        // strncpy(buf.mtext, format_message(x, y, dst.cols, dst.rows).c_str(), ROZMIAR_KOMUNIKATU);
         if (msgsnd(queue_id_2, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {
             error_message_exit("Error while sending message to C", shared_frame);
         }
@@ -120,4 +126,5 @@ int main(int argc, char** argv) {
     if (shmdt(shared_frame) == (uchar) -1) {
         std::cerr << "Error while closing shared memory: " << strerror(errno)  << std::endl;
     }
+    // std::cerr << "D -> B" << std::endl;
 }

@@ -15,7 +15,7 @@ int main() {
 
 	cv::Mat frame;
 	uchar* shared_frame;
-	bufmsg buf;
+	bufmsg_txt buf;
 
 	//otwarcie kolejki
 	int id_kolejki = msgget(KLUCZ_KOLEJKA_1, 0);
@@ -37,6 +37,7 @@ int main() {
 		std::cout<<"Nie otworzono kamere - blad\n";
 		return 1;
 	}
+	camera.set(cv::CAP_PROP_FPS, 10);
 
 	//otwarcie bufora pamięci współdzielonej
 	shared_frame = (uchar*) shmat(id_pamieci, 0, 0);
@@ -55,6 +56,7 @@ int main() {
 
 		//czy inny proces oczekuje na klatkę
 		if(msgrcv(id_kolejki, &buf, ROZMIAR_KOMUNIKATU, 3, IPC_NOWAIT)!=-1){
+			// std::cerr << "B -> A" << std::endl;
 			
 			//wstawienie ramki do pamięci współdzielonej
 			memcpy(shared_frame, frame.data, ROZMIAR_PAMIECI);
@@ -75,7 +77,7 @@ int main() {
         }
 		if(msgrcv(id_kolejki, &buf, ROZMIAR_KOMUNIKATU, 4, IPC_NOWAIT)!=-1) break;
 	}
-
+	// std::cerr << "D -> A" << std::endl;
 	//zamkniecie bufora pamieci
 	if(shmdt(shared_frame)==-1){
 		std::cout<<"Blad zamkniecia bufora pamieci\n";
