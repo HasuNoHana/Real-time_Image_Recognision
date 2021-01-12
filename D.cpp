@@ -149,7 +149,6 @@ int main(int argc, char** argv) {
                 return 1;
             }
             // std::cerr << "message from C received" << std::endl;
-            std::cerr << buf.mtext << std::endl;
 
             readMessage(&recivedField, buf.mtext);
 
@@ -167,6 +166,7 @@ int main(int argc, char** argv) {
                 recivedIsNotCurrent = true;
             }
         }
+        recivedIsNotCurrent = true;
         i++;
         if (i >= 6) break;
     }
