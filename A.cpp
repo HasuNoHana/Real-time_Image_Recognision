@@ -72,9 +72,9 @@ int main() {
 			// if(i==1000){//do usunięcia
 			// 	break;//do usunięcia
 			// }//do usunięcia
+                }
 
-			if(msgrcv(id_kolejki, &buf, ROZMIAR_KOMUNIKATU, 5, IPC_NOWAIT)!=-1) break;
-		}
+		if(msgrcv(id_kolejki, &buf, ROZMIAR_KOMUNIKATU, 5, IPC_NOWAIT)!=-1) break;
 	}
 
 	//zamkniecie bufora pamieci
