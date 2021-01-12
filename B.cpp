@@ -12,11 +12,14 @@
 
 #include "dane.hpp"
 
-void locate(cv::Mat &img, int &x, int &y) {
+bool locate(cv::Mat &img, int &x, int &y) {
     int window_row_n = 60, window_col_n = 60;
     int step = 30, sub_step = 5;
     int count, max = 0;
     int threshold_value = 242;
+
+    x = 0;
+    y = 0;
 
     for (int row = 0; row < img.rows - window_row_n; row += step) {         // move sliding window
         for (int col = 0; col < img.cols - window_col_n; col += step) {     //
@@ -33,15 +36,8 @@ void locate(cv::Mat &img, int &x, int &y) {
             }
         }
     }
-}
-
-std::string format_message(int &x, int &y, int &Xsize, int &Ysize) {        // (to C)
-    std::stringstream message;
-    message << x << " ";
-    message << y << " ";
-    message << Xsize << " ";
-    message << Ysize;
-    return message.str();
+    if (max > 0) return true;
+    else return false;
 }
 
 inline void error_message_exit(const char *message, uchar *shared_frame) {
@@ -91,18 +87,23 @@ int main(int argc, char** argv) {
 
     int i = 0;
     while (true) {
-        // wait for A to send the first frame
+        // wait for A to send the first frame or D to terminate the whole program 
         if (msgrcv(queue_id_1, &buf_txt, ROZMIAR_KOMUNIKATU, -2, 0) == -1) {
             error_message_exit("Error while receiving message from A", shared_frame);
         }
         if (buf_txt.mtype == 2) break;
         // std::cerr << "A -> B" << std::endl;
 
+        bool controller_in_range = false;
+
         // using shared memory
         src = cv::Mat(cv::Size(640, 480), CV_8UC3, shared_frame, cv::Mat::AUTO_STEP);   // use the received image
         cv::cvtColor(src, dst, cv::COLOR_BGR2GRAY);                                     // Convert the image to Gray
-        locate(dst, x, y);                                                              // save overexposed area coordinates in x, y
+        controller_in_range = locate(dst, x, y);                                        // save overexposed area coordinates in x, y
         //finished using shared memory
+
+        std::cerr << "orig x: " << buf.mtext[0];
+        std::cerr << " y: " << buf.mtext[1] << std::endl;
 
         // notify A that it can put a new frame in shmem
         buf_txt.mtype = 3;
@@ -111,15 +112,24 @@ int main(int argc, char** argv) {
             error_message_exit("Error while sending message to A", shared_frame);
         }
 
-        // send overexposed area coordinates to C
-        buf.mtype = 1;
-        buf.mtext[0] = x;
-        buf.mtext[1] = y;
-        buf.mtext[2] = dst.cols;
-        buf.mtext[3] = dst.rows;
-        // strncpy(buf.mtext, format_message(x, y, dst.cols, dst.rows).c_str(), ROZMIAR_KOMUNIKATU);
-        if (msgsnd(queue_id_2, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {
-            error_message_exit("Error while sending message to C", shared_frame);
+
+        if (controller_in_range) {
+            // send overexposed area coordinates to C
+            buf.mtype = 1;
+            buf.mtext[0] = x;
+            buf.mtext[1] = y;
+            buf.mtext[2] = dst.cols;
+            buf.mtext[3] = dst.rows;
+
+            std::cerr << " x: " << buf.mtext[0];
+            std::cerr << " y: " << buf.mtext[1];
+            std::cerr << " length: " << buf.mtext[2];
+            std::cerr << " height: " << buf.mtext[3] << std::endl;
+
+            // strncpy(buf.mtext, format_message(x, y, dst.cols, dst.rows).c_str(), ROZMIAR_KOMUNIKATU);
+            if (msgsnd(queue_id_2, &buf, ROZMIAR_KOMUNIKATU, 0) == -1) {
+                error_message_exit("Error while sending message to C", shared_frame);
+            }
         }
     }
     // close shmem
